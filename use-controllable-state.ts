@@ -23,10 +23,16 @@ export default function useControllableState<T>({
         return;
       }
 
-      onChange?.(typeof nextValue === 'function' ? (nextValue as (v: T) => T)(value) : nextValue);
+      const resolvedValue = isFunction(nextValue) ? (nextValue(value) as T) : (nextValue as T);
+
+      if (!Object.is(resolvedValue, value)) onChange?.(resolvedValue);
     },
     [isControlled, onChange, value],
   );
 
   return [state, dispatch] as const;
+}
+
+function isFunction(arg: unknown): arg is (...args: unknown[]) => unknown {
+  return typeof arg === 'function';
 }
